@@ -98,14 +98,15 @@ def curl_krb_request(tmp_dir, keytab, principal, url, cache_file_prefix,
   # when executing curl. Use a hash of the combination of the principal and keytab file
   # to generate a (relatively) unique cache filename so that we can use it as needed. Scope
   # this file by user in order to prevent sharing of cache files by multiple users.
-  ccache_file_name = HASH_ALGORITHM("{0}|{1}".format(principal, keytab)).hexdigest()
+  ccache_file_name_suffix = HASH_ALGORITHM("{0}|{1}".format(principal, keytab)).hexdigest()
+  ccache_file_name = "{0}_{1}_cc_{2}".format(cache_file_prefix, user, ccache_file_name_suffix)
 
   curl_krb_cache_path = os.path.join(tmp_dir, "curl_krb_cache")
   if not os.path.exists(curl_krb_cache_path):
     os.makedirs(curl_krb_cache_path)
   os.chmod(curl_krb_cache_path, 01777)
 
-  ccache_file_path = "{0}{1}{2}_{3}_cc_{4}".format(curl_krb_cache_path, os.sep, cache_file_prefix, user, ccache_file_name)
+  ccache_file_path = "{0}{1}{2}".format(curl_krb_cache_path, os.sep, ccache_file_name)
   kerberos_env = {'KRB5CCNAME': ccache_file_path}
 
   # concurrent kinit's can cause the following error:
